@@ -4,8 +4,9 @@ from scrapy.linkextractors import LinkExtractor
 
 class MyScraping(scrapy.Spider):
     name = 'myscraping'
-    allowed_domains = ['aosfatos.org']
-    start_urls = ['https://aosfatos.org/']
+    allowed_domains = ['']
+    start_urls = ['']
+
     '''
     rules = (
         Rule(
@@ -22,12 +23,13 @@ class MyScraping(scrapy.Spider):
         )
     )
     '''
+
     def parse(self, response):
-        links = response.xpath('//nav//ul//li/a[re:test(@href, "checamos")]/@href').getall()
+        links = response.css('article header a::attr(href)').getall()
         for link in links:
             yield scrapy.Request(
                 response.urljoin(link),
-                callback=self.parse_category
+                callback=self.parse_new
             )
 
     def parse_category(self, response):
@@ -46,19 +48,13 @@ class MyScraping(scrapy.Spider):
 
     def parse_new(self, response):
         #import ipdb; ipdb.set_trace()
-        title = response.css('article h1::text').get()
-        date = ' '.join(response.css('div.publish-date::text').get().split())
+        title = response.css('article header h2::text').get()
 
-        quotes = response.css('article blockquote p')
+        quotes = response.css('article .entry-content p')
         for quote in quotes:
             quote_text = quote.css('::text').get()
-            status = quote.xpath(
-                './parent::blockquote/preceding-sibling::figure//figcaption/text()'
-            ).get()
             yield {
                 'title': title,
-                'date': date,
                 'quote_text': quote_text,
-                'status': status,
                 'url': response.url
             }
