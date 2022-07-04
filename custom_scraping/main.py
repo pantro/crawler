@@ -50,3 +50,4 @@ class CustomSpider(scrapy.Spider):
         print('title: ',title)
         print('description: ',description)
         print('----------------------------------------------------')
+
