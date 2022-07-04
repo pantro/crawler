@@ -1,26 +1,52 @@
 import scrapy
-from scrapy.spiders import CrawlSpider, Rule
-from scrapy.linkextractors import LinkExtractor
 
-class MyScraping(CrawlSpider):
-    name = 'myscraping'
-    allowed_domains = ['aosfatos.org']
-    start_urls = ['https://aosfatos.org/']
+import os
+from dotenv import load_dotenv
 
-    rules = (
-        Rule(
-            LinkExtractor(
-                restrict_xpaths='//li[contains(text(), "Checamos")]//ul/li'
+load_dotenv('.env')
+URL = eval(os.getenv('URL'))
+URL_DOMAIN = eval(os.getenv('URL_DOMAIN'))
+
+class CustomSpider(scrapy.Spider):
+    name = "spider_2"
+
+    # Dominios permitidos
+    allowed_domains = URL_DOMAIN
+
+    # URLs para comenzar a rastrear
+    start_urls = URL
+
+    '''def parse(self, response):
+        menus = response.css('article h2 a::attr(href)').getall()
+
+        for menu in menus:
+            yield scrapy.Request(
+                response.urljoin(link),
+                callback=self.parse_article
             )
-        ),
-        Rule(
-            LinkExtractor(
-                restrict_css=('a.card')
-            ),
-            callback='parse_new'
-        )
-    )
+'''
+    def parse(self, response):
+        links = response.css('article h2 a::attr(href)').getall()
 
-    def paser_new(self, response):
-        import ipdb; ipdb.set_trace()
-        #title = response.css('article h1::text')
+        for link in links:
+            yield scrapy.Request(
+                response.urljoin(link),
+                callback=self.parse_article
+            )
+
+    def parse_article(self, response):
+        title = response.css('article h2.entry-title::text').get()
+        description = response.css('article p::text').getall()
+        description = [i for i in description if not (i == "\n")]#Eliminando \n
+        description = ' '.join(description)#Juntando todos los parrafos
+
+        '''yield {
+            'title': title,
+            'description': description,
+            'url': response.url
+        }
+        '''
+        print('----------------------------------------------------')
+        print('title: ',title)
+        print('description: ',description)
+        print('----------------------------------------------------')
