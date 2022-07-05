@@ -16,7 +16,17 @@ class CustomSpider_2(scrapy.Spider):
     # URLs para comenzar a rastrear
     start_urls = URL
 
+    '''
+    def start_requests(self):
+        #headers = {'User-Agent': 'Mozilla/5.0 (X11; Linux x86_64; rv:48.0) Gecko/20100101 Firefox/48.0'}
+        #headers = {'User-Agent': 'Mozilla/5.0 (Windows NT 6.1; WOW64) AppleWebKit/537.1 (KHTML, like Gecko) Chrome/22.0.1207.1 Safari/537.1'}
+        headers = {'User - Agent': 'Mozilla / 5.0(X11; Linux x86_64; rv: 48.0) Gecko / 20100101 Firefox / 48.0'}
+        for url in self.start_urls:
+            yield scrapy.Request(url, headers=headers)
+    '''
+
     def parse(self, response):
+
         categories = response.css('.menu-item-has-children:first-child > ul > li > a::attr(href)').getall()
 
         for category in categories:
