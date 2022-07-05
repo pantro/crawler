@@ -4,11 +4,11 @@ import os
 from dotenv import load_dotenv
 
 load_dotenv('.env')
-URL = eval(os.getenv('URL'))
-URL_DOMAIN = eval(os.getenv('URL_DOMAIN'))
+URL = eval(os.getenv('URL_2'))
+URL_DOMAIN = eval(os.getenv('URL_DOMAIN_2'))
 
-class CustomSpider(scrapy.Spider):
-    name = "spider_1"
+class CustomSpider_2(scrapy.Spider):
+    name = "spider_2"
 
     # Dominios permitidos
     allowed_domains = URL_DOMAIN
@@ -17,12 +17,11 @@ class CustomSpider(scrapy.Spider):
     start_urls = URL
 
     def parse(self, response):
-        menus = response.css('.menu-topo-categorias ul li a::attr(href)').getall()
-        self.parse_link(response)
+        categories = response.css('.menu-item-has-children:first-child > ul > li > a::attr(href)').getall()
 
-        for menu in menus:
+        for category in categories:
             yield scrapy.Request(
-                response.urljoin(menu),
+                response.urljoin(category),
                 callback=self.parse_link
             )
 
@@ -36,7 +35,7 @@ class CustomSpider(scrapy.Spider):
             )
 
         #Activar el paginador
-        pages = response.css('.navigation .wp-paginate .page::attr(href)').getall()
+        pages = response.css('.posts-navigation .nav-previous > a::attr(href)').getall()
         for page in pages:
             yield scrapy.Request(
                 response.urljoin(page),
@@ -44,8 +43,8 @@ class CustomSpider(scrapy.Spider):
             )
 
     def parse_article(self, response):
-        title = response.css('article h2.entry-title::text').get()
-        description = response.css('article p::text').getall()
+        title = response.css('article h1.entry-title::text').get()
+        description = response.css('article .entry-content p::text').getall()
         description = [i for i in description if not (i == "\n")]#Eliminando \n
         description = ' '.join(description)#Juntando todos los parrafos
         url = response.url
